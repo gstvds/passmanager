@@ -10,6 +10,8 @@ import uuid from 'react-native-uuid';
 import { Input } from '../../components/Form/Input';
 import { Button } from '../../components/Form/Button';
 
+import { STORAGE_KEYS } from '../../utils/types';
+
 import {
   Container,
   HeaderTitle,
@@ -36,7 +38,9 @@ export function RegisterLoginData() {
     formState: {
       errors
     }
-  } = useForm();
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
 
   async function handleRegister(formData: FormData) {
     const newLoginData = {
@@ -44,7 +48,20 @@ export function RegisterLoginData() {
       ...formData
     }
 
-    // Save data on AsyncStorage
+    try {
+      const response = await AsyncStorage.getItem(STORAGE_KEYS.logins);
+      const parsedResponse = response ? JSON.parse(response) : [];
+      
+      const newData = [
+        ...parsedResponse,
+        newLoginData,
+      ];
+
+      await AsyncStorage.setItem(STORAGE_KEYS.logins, JSON.stringify(newData));
+      reset();
+    } catch {
+      Alert.alert('Erro ao salvar nova senha');
+    }
   }
 
   return (
@@ -60,9 +77,7 @@ export function RegisterLoginData() {
           <Input
             title="Título"
             name="title"
-            error={
-              // message error here
-            }
+            error={errors.title?.message}
             control={control}
             placeholder="Escreva o título aqui"
             autoCapitalize="sentences"
@@ -71,9 +86,7 @@ export function RegisterLoginData() {
           <Input
             title="Email"
             name="email"
-            error={
-              // message error here
-            }
+            error={errors.email?.message}
             control={control}
             placeholder="Escreva o Email aqui"
             autoCorrect={false}
@@ -83,9 +96,7 @@ export function RegisterLoginData() {
           <Input
             title="Senha"
             name="password"
-            error={
-              // message error here
-            }
+            error={errors.password?.message}
             control={control}
             secureTextEntry
             placeholder="Escreva a senha aqui"

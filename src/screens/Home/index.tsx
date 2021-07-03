@@ -1,6 +1,9 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
+
+import { STORAGE_KEYS } from '../../utils/types';
 
 import { SearchBar } from '../../components/SearchBar';
 import { LoginDataItem } from '../../components/LoginDataItem';
@@ -22,12 +25,20 @@ interface LoginDataProps {
 type LoginListDataProps = LoginDataProps[];
 
 export function Home() {
-  // const [searchListData, setSearchListData] = useState<LoginListDataProps>([]);
-  // const [data, setData] = useState<LoginListDataProps>([]);
+  const [searchListData, setSearchListData] = useState<LoginListDataProps>([]);
+  const [data, setData] = useState<LoginListDataProps>([]);
 
   async function loadData() {
-    // Get asyncStorage data, use setSearchListData and setData
+    try {
+      const response = await AsyncStorage.getItem(STORAGE_KEYS.logins);
+      const parsedResponse = response ? JSON.parse(response) : [];
+      setSearchListData(parsedResponse);
+      setData(parsedResponse);
+    } catch {
+      Alert.alert('Erro ao carregar dados');
+    }
   }
+  
   useEffect(() => {
     loadData();
   }, []);
@@ -37,7 +48,8 @@ export function Home() {
   }, []));
 
   function handleFilterLoginData(search: string) {
-    // Filter results inside data, save with setSearchListData
+    const findLoginData = data.filter((item) => item.title.includes(search));
+    setSearchListData(findLoginData);
   }
 
   return (
