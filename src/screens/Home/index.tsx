@@ -1,9 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Alert } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 
-import { STORAGE_KEYS } from '../../utils/types';
+import { useStorageData } from '../../hooks/storage';
 
 import { SearchBar } from '../../components/SearchBar';
 import { LoginDataItem } from '../../components/LoginDataItem';
@@ -27,10 +26,11 @@ type LoginListDataProps = LoginDataProps[];
 export function Home() {
   const [searchListData, setSearchListData] = useState<LoginListDataProps>([]);
   const [data, setData] = useState<LoginListDataProps>([]);
+  const storage = useStorageData();
 
   async function loadData() {
     try {
-      const response = await AsyncStorage.getItem(STORAGE_KEYS.logins);
+      const response = await storage.get();
       const parsedResponse = response ? JSON.parse(response) : [];
       setSearchListData(parsedResponse);
       setData(parsedResponse);
